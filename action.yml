@@ -1,0 +1,38 @@
+name: PipeMesh consume
+description: Fetch what this run's PipeMesh job consumes — files at their paths, every entry as a variable.
+author: PipeMesh
+branding:
+  icon: download
+  color: gray-dark
+inputs:
+  artifacts:
+    description: Keys to fetch (build/app, space- or comma-separated). Empty fetches everything the job's consumes grants.
+    required: false
+    default: ""
+  path:
+    description: Where file entries unpack. Default the workspace, where each lands at its own path.
+    required: false
+    default: "."
+  pipemesh-url:
+    description: The PipeMesh instance that dispatched this run.
+    required: false
+    default: https://pipemesh.dev
+  run:
+    description: The job run this workflow was dispatched for (the pipemesh_run input).
+    required: false
+    default: ${{ github.event.inputs.pipemesh_run }}
+outputs:
+  manifest:
+    description: The fetched entries, one per line — variable, type, value, digest (tab-separated).
+    value: ${{ steps.consume.outputs.manifest }}
+runs:
+  using: composite
+  steps:
+    - id: consume
+      shell: bash
+      env:
+        PM_URL: ${{ inputs.pipemesh-url }}
+        PM_RUN: ${{ inputs.run }}
+        PM_ONLY: ${{ inputs.artifacts }}
+        PM_PATH: ${{ inputs.path }}
+      run: '"$GITHUB_ACTION_PATH/consume.sh"'
