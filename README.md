@@ -9,7 +9,7 @@ own paths, and every entry becomes a variable — `build/app` is
 # pipemesh.yaml
 sign:
   consumes: [build/app]
-  outputs: { signed-app: file }
+  produces: { signed-app: file }
   delegate: { type: github_actions, params: { workflow: sign.yml } }
 ```
 
