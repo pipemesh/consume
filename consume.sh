@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # The run proves who it is with its own GitHub OIDC token; the pipemesh_run
-# handle only names the job run it was dispatched for. PipeMesh answers with
+# handle only names the job run it was dispatched for. Pipemesh answers with
 # what that job's consumes: grants — nothing else (DESIGN-V59 §7).
 set -euo pipefail
 
@@ -9,7 +9,7 @@ if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
   exit 1
 fi
 if [ -z "${PM_RUN:-}" ]; then
-  echo "::error::no pipemesh_run — this workflow must be dispatched by PipeMesh and declare the pipemesh_run input"
+  echo "::error::no pipemesh_run — this workflow must be dispatched by Pipemesh and declare the pipemesh_run input"
   exit 1
 fi
 
@@ -26,7 +26,7 @@ work=$(mktemp -d)
 code=$(curl -sS -o "$work/entries.tsv" -w '%{http_code}' -X POST \
   -H "Authorization: Bearer $token" "$PM_URL/api/actions/inputs?$query" || echo 000)
 if [ "$code" != 200 ]; then
-  echo "::error::PipeMesh refused (HTTP $code): $(cat "$work/entries.tsv" 2>/dev/null)"
+  echo "::error::Pipemesh refused (HTTP $code): $(cat "$work/entries.tsv" 2>/dev/null)"
   exit 1
 fi
 

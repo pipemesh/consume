@@ -1,6 +1,6 @@
-name: PipeMesh consume
-description: Fetch what this run's PipeMesh job consumes — files at their paths, every entry as a variable.
-author: PipeMesh
+name: Pipemesh consume
+description: Fetch what this run's Pipemesh job consumes — files at their paths, every entry as a variable.
+author: Pipemesh
 branding:
   icon: download
   color: gray-dark
@@ -14,9 +14,9 @@ inputs:
     required: false
     default: "."
   pipemesh-url:
-    description: The PipeMesh instance that dispatched this run.
+    description: The Pipemesh instance that dispatched this run.
     required: false
-    default: https://pipemesh.dev
+    default: https://pipemesh.io
   run:
     description: The job run this workflow was dispatched for (the pipemesh_run input).
     required: false

@@ -1,7 +1,7 @@
 # pipemesh/consume
 
-Fetches what the PipeMesh job that dispatched this run consumes
-([DESIGN-V59 §7](https://pipemesh.dev/docs)): file entries unpack at their
+Fetches what the Pipemesh job that dispatched this run consumes
+([DESIGN-V59 §7](https://pipemesh.io/docs)): file entries unpack at their
 own paths, and every entry becomes a variable — `build/app` is
 `$PIPEMESH_BUILD_APP` (a file's path, or `ref@digest` for an image).
 
