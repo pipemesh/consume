@@ -2,13 +2,14 @@
 
 Fetches what the Pipemesh job that dispatched this run consumes
 ([DESIGN-V59 §7](https://pipemesh.io/docs)): file entries unpack at their
-own paths, and every entry becomes a variable — `build/app` is
-`$PIPEMESH_BUILD_APP` (a file's path, or `ref@digest` for an image).
+own paths, and every entry becomes the variable the job's `consumes:`
+names — `APP: build/app` is `$APP` (a file's path, or `ref@digest` for
+an image).
 
 ```yaml
 # pipemesh.yaml
 sign:
-  consumes: [build/app]
+  consumes: { APP: build/app }
   produces: { signed-app: file }
   delegate: { type: github_actions, params: { workflow: sign.yml } }
 ```
@@ -26,7 +27,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: pipemesh/consume@v1
-      - run: ./scripts/sign-and-notarize.sh "$PIPEMESH_BUILD_APP"
+      - run: ./scripts/sign-and-notarize.sh "$APP"
       - uses: actions/upload-artifact@v4
         with: { name: signed-app, path: dist/LocalSlack-signed.zip }
 ```
