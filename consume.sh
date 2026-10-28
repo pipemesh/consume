@@ -2,6 +2,8 @@
 # The run proves who it is with its own GitHub OIDC token; the pipemesh_run
 # handle only names the job run it was dispatched for. Pipemesh answers with
 # what that job's consumes: grants — nothing else (DESIGN-V59 §7).
+# It calls the instance's runtime surface, /api/runtime/actions (DESIGN-V121
+# §8), which instances have answered since 2026-10-28.
 set -euo pipefail
 
 if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
@@ -24,7 +26,7 @@ query="run=$(urlencode "$PM_RUN")"
 if [ -n "${PM_ONLY:-}" ]; then query="$query&artifacts=$(urlencode "$PM_ONLY")"; fi
 work=$(mktemp -d)
 code=$(curl -sS -o "$work/entries.tsv" -w '%{http_code}' -X POST \
-  -H "Authorization: Bearer $token" "$PM_URL/api/actions/inputs?$query" || echo 000)
+  -H "Authorization: Bearer $token" "$PM_URL/api/runtime/actions/inputs?$query" || echo 000)
 if [ "$code" != 200 ]; then
   echo "::error::Pipemesh refused (HTTP $code): $(cat "$work/entries.tsv" 2>/dev/null)"
   exit 1
