@@ -36,3 +36,36 @@ The run proves itself with its own GitHub OIDC token (hence `id-token:
 write`); the `pipemesh_run` input only names the job run. `with: artifacts:`
 narrows to some of the granted keys — a key the job's `consumes:` does not
 list is refused.
+
+## Pipemesh's registry
+
+`registry-login: true` also logs the run in to Pipemesh's registry
+(DESIGN-V142 §3), with a login for exactly what the job may reach: pull
+on the images it consumes there, push on its `oci` keys' places
+(`pipemesh/produce` with `place: true` says where).
+
+```yaml
+permissions: { id-token: write, contents: read }
+steps:
+  - id: pipemesh
+    uses: pipemesh/consume@v1
+    with:
+      registry-login: true
+  - run: docker run --rm "$APP" ./smoke-test   # $APP: an image the job consumes, ref@digest
+```
+
+- **With `docker` on the runner** it runs `docker login`, so docker,
+  buildx, crane and Jib (which read Docker's config) pull and push.
+- **Outputs** `registry` (the host), `registry-username` and
+  `registry-password` (masked in the log) are for any other tool:
+  `crane auth login "${{ steps.pipemesh.outputs.registry }}" -u … -p …`.
+- **Only the run Pipemesh dispatched pushes:** a run of the workflow
+  Pipemesh didn't dispatch (by hand, on another branch) gets a login
+  that only pulls, and a warning saying why. The step waits up to two
+  minutes for Pipemesh to match the run to its job, which a push needs;
+  put `pipemesh_run` in the workflow's `run-name:`.
+- **The login is valid 15 minutes,** minted when the step runs: put the
+  step right before the pulls and pushes.
+- **Needs** a Pipemesh instance with a registry of its own, and one that
+  hands out registry logins to Actions runs (`POST
+  /api/runtime/actions/images/credential`); others refuse the step.
