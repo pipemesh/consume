@@ -59,8 +59,14 @@ done < "$work/entries.tsv"
 } >> "$GITHUB_OUTPUT"
 
 if [ "${PM_REGISTRY_LOGIN:-false}" != true ]; then exit 0; fi
-code=$(curl -sS -D "$work/login.headers" -o "$work/login.tsv" -w '%{http_code}' -X POST \
-  -H "Authorization: Bearer $token" "$PM_URL/api/runtime/actions/images/credential?run=$(urlencode "$PM_RUN")" || echo 000)
+# 409: Pipemesh hasn't matched this run to its job yet, which a push needs
+# (only the run Pipemesh dispatched pushes); it takes a few seconds.
+for attempt in $(seq 1 24); do
+  code=$(curl -sS -D "$work/login.headers" -o "$work/login.tsv" -w '%{http_code}' -X POST \
+    -H "Authorization: Bearer $token" "$PM_URL/api/runtime/actions/images/credential?run=$(urlencode "$PM_RUN")" || echo 000)
+  [ "$code" = 409 ] && [ "$attempt" -lt 24 ] || break
+  sleep 5
+done
 if [ "$code" != 200 ]; then
   echo "::error::Pipemesh refused a registry login (HTTP $code): $(cat "$work/login.tsv" 2>/dev/null)"
   exit 1
@@ -73,6 +79,10 @@ if [ -z "$registry" ] || [ -z "$user" ] || [ -z "$pass" ]; then
   exit 1
 fi
 echo "::add-mask::$pass"
+refused=$(grep -i '^pipemesh-push-refused:' "$work/login.headers" | tail -n 1 | cut -d: -f2- | sed 's/^ *//' | tr -d '\r' || true)
+if [ -n "$refused" ]; then
+  echo "::warning::this login only pulls: $refused"
+fi
 {
   echo "registry=$registry"
   echo "registry-username=$user"

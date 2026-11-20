@@ -59,6 +59,11 @@ steps:
 - **Outputs** `registry` (the host), `registry-username` and
   `registry-password` (masked in the log) are for any other tool:
   `crane auth login "${{ steps.pipemesh.outputs.registry }}" -u … -p …`.
+- **Only the run Pipemesh dispatched pushes:** a run of the workflow
+  Pipemesh didn't dispatch (by hand, on another branch) gets a login
+  that only pulls, and a warning saying why. The step waits up to two
+  minutes for Pipemesh to match the run to its job, which a push needs;
+  put `pipemesh_run` in the workflow's `run-name:`.
 - **The login is valid 15 minutes,** minted when the step runs: put the
   step right before the pulls and pushes.
 - **Needs** a Pipemesh instance with a registry of its own, and one that
