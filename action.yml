@@ -21,10 +21,23 @@ inputs:
     description: The job run this workflow was dispatched for (the pipemesh_run input).
     required: false
     default: ${{ github.event.inputs.pipemesh_run }}
+  registry-login:
+    description: "Also log in to Pipemesh's registry: pull the images the job consumes, push to its oci keys' places. Runs docker login when docker is installed, and sets the registry outputs. Valid 15 minutes."
+    required: false
+    default: "false"
 outputs:
   manifest:
     description: The fetched entries, one per line — variable, type, value, digest (tab-separated).
     value: ${{ steps.consume.outputs.manifest }}
+  registry:
+    description: "Pipemesh's registry host (with registry-login: true)."
+    value: ${{ steps.consume.outputs.registry }}
+  registry-username:
+    description: "The registry login's username (with registry-login: true)."
+    value: ${{ steps.consume.outputs.registry-username }}
+  registry-password:
+    description: "The registry login's password, masked in the log (with registry-login: true)."
+    value: ${{ steps.consume.outputs.registry-password }}
 runs:
   using: composite
   steps:
@@ -35,4 +48,5 @@ runs:
         PM_RUN: ${{ inputs.run }}
         PM_ONLY: ${{ inputs.artifacts }}
         PM_PATH: ${{ inputs.path }}
+        PM_REGISTRY_LOGIN: ${{ inputs.registry-login }}
       run: '"$GITHUB_ACTION_PATH/consume.sh"'
